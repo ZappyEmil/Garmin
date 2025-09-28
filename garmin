@@ -1,0 +1,64 @@
+// Scandinavian Slide-In Sunvisor for Garmin Camper 770 LMT-D
+// V6: Final tuned design - slim, curved, snap-on rails, side wings
+
+// --- Parameters ---
+wall_thickness   = 2.5;     // Thickness of visor panels
+rail_depth       = 3;       // How much the clip grips GPS bezel
+rail_height      = 8;       // Height of slide-in rails
+visor_length     = 22;      // Forward extension
+visor_angle      = 12;      // Downward tilt
+side_flare       = 15;      // Side wing flare (mm)
+corner_radius    = 4;       // Rounded corners
+fit_tolerance    = 0.4;     // Clearance
+
+// GPS dimensions (Camper 770, in mm)
+gps_w = 173;
+gps_h = 99;
+
+// Derived
+outer_w = gps_w + 2*fit_tolerance;
+outer_h = gps_h + 2*fit_tolerance;
+
+// --- Modules ---
+module rounded_plate(w,d,h,r) {
+    minkowski() {
+        cube([w,d,h], center=false);
+        cylinder(r=r, h=0.1, $fn=32);
+    }
+}
+
+module slide_in_rails() {
+    // Left rail
+    translate([0,-rail_depth,outer_h-rail_height])
+        cube([rail_depth, rail_depth, rail_height]);
+    // Right rail
+    translate([outer_w-rail_depth,-rail_depth,outer_h-rail_height])
+        cube([rail_depth, rail_depth, rail_height]);
+}
+
+module curved_visor() {
+    translate([0,0,outer_h]) 
+        rotate([-visor_angle,0,0])
+            hull() {
+                // Back edge of visor
+                translate([0,0,0])
+                    cube([outer_w, wall_thickness, wall_thickness]);
+                // Front edge flared
+                translate([-side_flare, visor_length,0])
+                    cube([outer_w+2*side_flare, wall_thickness, wall_thickness]);
+            }
+}
+
+module scandi_sunvisor() {
+    // Base back strip (slim, rounded)
+    rounded_plate(outer_w, wall_thickness, outer_h, corner_radius);
+
+    // Slide-in rails (grip GPS from top)
+    slide_in_rails();
+
+    // Top visor with flared sides
+    curved_visor();
+}
+
+// Render
+scandi_sunvisor();
